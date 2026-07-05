@@ -8,6 +8,9 @@ struct GeometryTestRunner {
         testConvertsMainPortraitVisibleFrameToAccessibilityCoordinates()
         testConvertsSecondaryLandscapeFrameToAccessibilityCoordinates()
         testTargetFramesSplitVisibleFrameIntoTopAndBottomHalves()
+        testScreenRecorderModeUsesBottomSixteenByNineAreaOnPortraitDisplay()
+        testScreenRecorderModeUsesRecorderSplitForRegionInference()
+        testScreenRecorderModeFallsBackToNormalHalvesOnLandscapeDisplay()
         testRegionUsesTopLeftCoordinateMidpoint()
         testTilerSelectsDisplayFromWindowCenterBeforeClickPoint()
 
@@ -49,6 +52,68 @@ struct GeometryTestRunner {
         assertEqual(
             WindowTiler.targetFrame(for: .bottomHalf, in: display),
             CGRect(x: 0, y: 1264, width: 1440, height: 1234)
+        )
+    }
+
+    private static func testScreenRecorderModeUsesBottomSixteenByNineAreaOnPortraitDisplay() {
+        let display = DisplayFrame(
+            id: 1,
+            name: "Portrait",
+            frame: CGRect(x: 0, y: 0, width: 1440, height: 2560),
+            visibleFrame: CGRect(x: 0, y: 30, width: 1440, height: 2468)
+        )
+
+        assertEqual(
+            WindowTiler.targetFrame(for: .topHalf, in: display, mode: .screenRecorder),
+            CGRect(x: 0, y: 30, width: 1440, height: 1658)
+        )
+        assertEqual(
+            WindowTiler.targetFrame(for: .bottomHalf, in: display, mode: .screenRecorder),
+            CGRect(x: 0, y: 1688, width: 1440, height: 810)
+        )
+    }
+
+    private static func testScreenRecorderModeUsesRecorderSplitForRegionInference() {
+        let display = DisplayFrame(
+            id: 1,
+            name: "Portrait",
+            frame: CGRect(x: 0, y: 0, width: 1440, height: 2560),
+            visibleFrame: CGRect(x: 0, y: 30, width: 1440, height: 2468)
+        )
+
+        assertEqual(
+            WindowTiler.region(
+                forWindowCenter: CGPoint(x: 720, y: 1600),
+                in: display,
+                mode: .screenRecorder
+            ),
+            .topHalf
+        )
+        assertEqual(
+            WindowTiler.region(
+                forWindowCenter: CGPoint(x: 720, y: 1800),
+                in: display,
+                mode: .screenRecorder
+            ),
+            .bottomHalf
+        )
+    }
+
+    private static func testScreenRecorderModeFallsBackToNormalHalvesOnLandscapeDisplay() {
+        let display = DisplayFrame(
+            id: 2,
+            name: "Landscape",
+            frame: CGRect(x: 1440, y: 1840, width: 1280, height: 720),
+            visibleFrame: CGRect(x: 1440, y: 1840, width: 1280, height: 720)
+        )
+
+        assertEqual(
+            WindowTiler.targetFrame(for: .topHalf, in: display, mode: .screenRecorder),
+            CGRect(x: 1440, y: 1840, width: 1280, height: 360)
+        )
+        assertEqual(
+            WindowTiler.targetFrame(for: .bottomHalf, in: display, mode: .screenRecorder),
+            CGRect(x: 1440, y: 2200, width: 1280, height: 360)
         )
     }
 

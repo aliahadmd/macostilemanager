@@ -7,6 +7,20 @@ public enum TileRegion: Equatable {
     case bottomHalf
 }
 
+public enum TilingMode: String, CaseIterable, Equatable {
+    case normal
+    case screenRecorder
+
+    public var title: String {
+        switch self {
+        case .normal:
+            return "Normal Mode"
+        case .screenRecorder:
+            return "Screen Recorder Mode"
+        }
+    }
+}
+
 public struct DisplayFrame: Equatable {
     public let id: CGDirectDisplayID
     public let name: String

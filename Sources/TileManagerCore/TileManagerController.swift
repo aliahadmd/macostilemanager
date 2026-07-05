@@ -74,6 +74,10 @@ public final class TileManagerController {
             }
             self?.menuController.rebuildMenu(eventTapRunning: self?.eventTap.isRunning ?? false)
         }
+
+        menuController.onSelectTilingMode = { mode in
+            TileManagerLog.info("Tiling mode changed to \(mode.rawValue)")
+        }
     }
 
     private func refreshEventTap() {
@@ -87,7 +91,6 @@ public final class TileManagerController {
         let started = eventTap.start()
         if started {
             reportedEventTapStartFailure = false
-            TileManagerLog.info("Event tap refresh succeeded")
         } else if !reportedEventTapStartFailure {
             reportedEventTapStartFailure = true
             TileManagerLog.error("Event tap refresh failed")
@@ -108,7 +111,15 @@ public final class TileManagerController {
             pendingTarget = nil
             TileManagerLog.info("Consuming double-click and tiling cached window")
             DispatchQueue.main.async { [weak self] in
-                _ = self?.tiler.tile(window: target.window, clickPoint: point)
+                guard let self else {
+                    return
+                }
+
+                _ = self.tiler.tile(
+                    window: target.window,
+                    clickPoint: point,
+                    mode: self.settings.tilingMode
+                )
             }
             return true
         }

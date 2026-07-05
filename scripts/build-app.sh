@@ -52,5 +52,21 @@ cat > "$APP_DIR/Contents/Info.plist" <<PLIST
 </plist>
 PLIST
 
-codesign --force --deep --sign - "$APP_DIR"
+SIGNING_IDENTITY="${TILEMANAGER_CODESIGN_IDENTITY:-}"
+if [[ -z "$SIGNING_IDENTITY" ]]; then
+    SIGNING_IDENTITY="$(
+        security find-identity -v -p codesigning 2>/dev/null \
+            | sed -n 's/.*"\(.*\)".*/\1/p' \
+            | head -n 1
+    )"
+fi
+
+if [[ -z "$SIGNING_IDENTITY" ]]; then
+    SIGNING_IDENTITY="-"
+    echo "Signing $APP_NAME with ad-hoc identity"
+else
+    echo "Signing $APP_NAME with identity: $SIGNING_IDENTITY"
+fi
+
+codesign --force --deep --sign "$SIGNING_IDENTITY" "$APP_DIR"
 echo "$APP_DIR"

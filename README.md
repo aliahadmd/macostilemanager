@@ -30,6 +30,8 @@ For day-to-day use, install to a stable per-user app path:
 
 Then enable `TileManager` in System Settings > Privacy & Security > Accessibility. If an older rebuilt copy is already listed, remove it and add `~/Applications/TileManager.app`.
 
+The build script signs the app with your first available local code-signing identity, falling back to ad-hoc signing only when no identity exists. A stable signing identity helps macOS keep Accessibility permission across rebuilds.
+
 ## Verify
 
 ```sh
@@ -44,3 +46,5 @@ swift run TileManagerGeometryTests
 - Windows mostly above the display midpoint move to the top half.
 - Windows mostly below the display midpoint move to the bottom half.
 - Display rotation, menu bar, dock, and multi-display layout are handled from macOS screen geometry.
+- Normal Mode keeps the classic top/bottom half layout.
+- Screen Recorder Mode makes the bottom region a fitted 16:9 recording area on portrait displays, with the remaining vertical space on top.

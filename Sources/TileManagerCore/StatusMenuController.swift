@@ -6,6 +6,7 @@ public final class StatusMenuController: NSObject {
     public var onRequestAccessibility: (() -> Void)?
     public var onOpenAccessibilitySettings: (() -> Void)?
     public var onToggleLaunchAtLogin: ((Bool) -> Void)?
+    public var onSelectTilingMode: ((TilingMode) -> Void)?
 
     private let settings: AppSettings
     private let statusItem: NSStatusItem
@@ -32,6 +33,20 @@ public final class StatusMenuController: NSObject {
         enabledItem.target = self
         enabledItem.state = settings.enabled ? .on : .off
         menu.addItem(enabledItem)
+
+        for mode in TilingMode.allCases {
+            let modeItem = NSMenuItem(
+                title: mode.title,
+                action: #selector(selectTilingMode(_:)),
+                keyEquivalent: ""
+            )
+            modeItem.target = self
+            modeItem.representedObject = mode.rawValue
+            modeItem.state = settings.tilingMode == mode ? .on : .off
+            menu.addItem(modeItem)
+        }
+
+        menu.addItem(.separator())
 
         let eventTapTitle = isEventTapRunning ? "Event Tap: Running" : "Event Tap: Stopped"
         let eventTapItem = NSMenuItem(title: eventTapTitle, action: nil, keyEquivalent: "")
@@ -127,6 +142,17 @@ public final class StatusMenuController: NSObject {
 
     @objc private func toggleLaunchAtLogin(_ sender: NSMenuItem) {
         onToggleLaunchAtLogin?(!LoginItemManager.isEnabled)
+    }
+
+    @objc private func selectTilingMode(_ sender: NSMenuItem) {
+        guard let rawValue = sender.representedObject as? String,
+              let mode = TilingMode(rawValue: rawValue) else {
+            return
+        }
+
+        settings.tilingMode = mode
+        onSelectTilingMode?(mode)
+        rebuildMenu(eventTapRunning: isEventTapRunning)
     }
 
     @objc private func quit(_ sender: NSMenuItem) {
